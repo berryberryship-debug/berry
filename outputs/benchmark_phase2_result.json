@@ -1,0 +1,143 @@
+{
+    "config": {
+        "base_seed": 20260813,
+        "monte_carlo_runs": 5,
+        "omega_q": 5.0,
+        "anharmonicity": -0.3,
+        "n_levels": 3,
+        "t_duration": 20.0,
+        "n_steps": 1000,
+        "pulse_sigma": 3.0,
+        "pulse_amplitude": 0.5
+    },
+    "execution_time_seconds": 0.143,
+    "monte_carlo_aggregated": {
+        "ideal_gaussian": {
+            "fidelity": {
+                "mean": 1.3547943683249654e-05,
+                "std": 1.6940658945086007e-21
+            },
+            "leakage_level_2": {
+                "mean": 0.9947665295995105,
+                "std": 0.0
+            }
+        },
+        "noisy_gaussian": {
+            "fidelity": {
+                "mean": 4.571876683412949e-05,
+                "std": 2.4822166693775642e-05
+            },
+            "leakage_level_2": {
+                "mean": 0.9951001537157558,
+                "std": 0.0016005128150737684
+            }
+        },
+        "noisy_drag": {
+            "fidelity": {
+                "mean": 4.571876683412949e-05,
+                "std": 2.4822166693775642e-05
+            },
+            "leakage_level_2": {
+                "mean": 0.9951001537157558,
+                "std": 0.0016005128150737684
+            }
+        }
+    },
+    "runs_detail": [
+        {
+            "run_index": 0,
+            "seed": 20260813,
+            "ideal_gaussian": {
+                "fidelity": 1.3547943683249652e-05,
+                "infidelity": 0.9999864520563168,
+                "leakage_level_2": 0.9947665295995105
+            },
+            "noisy_gaussian": {
+                "fidelity": 1.0210049855552948e-05,
+                "infidelity": 0.9999897899501444,
+                "leakage_level_2": 0.994335329538339
+            },
+            "noisy_drag": {
+                "fidelity": 1.0210049855552948e-05,
+                "infidelity": 0.9999897899501444,
+                "leakage_level_2": 0.994335329538339
+            }
+        },
+        {
+            "run_index": 1,
+            "seed": 20260814,
+            "ideal_gaussian": {
+                "fidelity": 1.3547943683249652e-05,
+                "infidelity": 0.9999864520563168,
+                "leakage_level_2": 0.9947665295995105
+            },
+            "noisy_gaussian": {
+                "fidelity": 2.6823741064174324e-05,
+                "infidelity": 0.9999731762589358,
+                "leakage_level_2": 0.9950565916483263
+            },
+            "noisy_drag": {
+                "fidelity": 2.6823741064174324e-05,
+                "infidelity": 0.9999731762589358,
+                "leakage_level_2": 0.9950565916483263
+            }
+        },
+        {
+            "run_index": 2,
+            "seed": 20260815,
+            "ideal_gaussian": {
+                "fidelity": 1.3547943683249652e-05,
+                "infidelity": 0.9999864520563168,
+                "leakage_level_2": 0.9947665295995105
+            },
+            "noisy_gaussian": {
+                "fidelity": 7.010739356556062e-05,
+                "infidelity": 0.9999298926064344,
+                "leakage_level_2": 0.9974956930974458
+            },
+            "noisy_drag": {
+                "fidelity": 7.010739356556062e-05,
+                "infidelity": 0.9999298926064344,
+                "leakage_level_2": 0.9974956930974458
+            }
+        },
+        {
+            "run_index": 3,
+            "seed": 20260816,
+            "ideal_gaussian": {
+                "fidelity": 1.3547943683249652e-05,
+                "infidelity": 0.9999864520563168,
+                "leakage_level_2": 0.9947665295995105
+            },
+            "noisy_gaussian": {
+                "fidelity": 7.517537512203936e-05,
+                "infidelity": 0.999924824624878,
+                "leakage_level_2": 0.9926905300856935
+            },
+            "noisy_drag": {
+                "fidelity": 7.517537512203936e-05,
+                "infidelity": 0.999924824624878,
+                "leakage_level_2": 0.9926905300856935
+            }
+        },
+        {
+            "run_index": 4,
+            "seed": 20260817,
+            "ideal_gaussian": {
+                "fidelity": 1.3547943683249652e-05,
+                "infidelity": 0.9999864520563168,
+                "leakage_level_2": 0.9947665295995105
+            },
+            "noisy_gaussian": {
+                "fidelity": 4.627727456332023e-05,
+                "infidelity": 0.9999537227254367,
+                "leakage_level_2": 0.995922624208974
+            },
+            "noisy_drag": {
+                "fidelity": 4.627727456332023e-05,
+                "infidelity": 0.9999537227254367,
+                "leakage_level_2": 0.995922624208974
+            }
+        }
+    ]
+}

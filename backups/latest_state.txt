@@ -1,0 +1,19 @@
+CHECKPOINT QUANTUMLAB - Fri Aug 14 10:44:12 EDT 2026
+==========================================
+-rw-------. 1 u0_a379 u0_a379  12K Aug 14 09:47 master_pipeline.py
+
+core/:
+total 48K
+-rw-------. 1 u0_a379 u0_a379    0 Aug 14 09:35 __init__.py
+drwx------. 2 u0_a379 u0_a379 3.4K Aug 14 09:35 __pycache__
+-rw-------. 1 u0_a379 u0_a379 2.9K Aug 14 09:35 calibration.py
+-rw-------. 1 u0_a379 u0_a379    0 Aug 13 22:28 control.py
+-rw-------. 1 u0_a379 u0_a379 3.3K Aug 13 23:41 dataset.py
+-rw-------. 1 u0_a379 u0_a379  365 Aug 13 22:30 metrics.py
+-rw-------. 1 u0_a379 u0_a379 2.0K Aug 13 23:05 moire.py
+-rw-------. 1 u0_a379 u0_a379 1010 Aug 13 22:28 noise.py
+-rw-------. 1 u0_a379 u0_a379 3.5K Aug 13 23:52 pipeline.py
+-rw-------. 1 u0_a379 u0_a379 1012 Aug 13 22:28 pulses.py
+-rw-------. 1 u0_a379 u0_a379 3.2K Aug 13 22:24 soliton_nls.py
+-rw-------. 1 u0_a379 u0_a379 4.8K Aug 13 23:14 transmon.py
+-rw-------. 1 u0_a379 u0_a379 3.9K Aug 13 23:14 transmon.py.phase2_backup
