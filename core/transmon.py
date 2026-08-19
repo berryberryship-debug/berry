@@ -1,159 +1,99 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-QuantumLab — Modèle Transmon et Évolution Temporelle
-"""
-
+"""Moteur Transmon avec ionisation induite par la mesure."""
 import numpy as np
+from dataclasses import dataclass
 
-class TransmonSystem:
-    def __init__(self, omega_q: float = 5.0, anharmonicity: float = -0.3, n_levels: int = 3):
-        self.omega_q = omega_q
-        self.anharmonicity = anharmonicity
-        self.n_levels = n_levels
+@dataclass
+class Transmon:
+    """
+    Transmon qubit avec Hamiltonien complet et modèle d'ionisation.
+    
+    H = 4*E_C*(n - n_g)^2 - E_J*cos(phi)
+    
+    Paramètres typiques (GHz) :
+      - E_C ~ 0.2-0.3 GHz
+      - E_J ~ 10-20 GHz
+      - E_J/E_C ~ 50-100
+    """
+    E_C: float = 0.25
+    E_J: float = 15.0
+    n_g: float = 0.0
+    N_levels: int = 10
+
+    def hamiltonien(self) -> np.ndarray:
+        """Construit la matrice Hamiltonienne du transmon."""
+        N = self.N_levels
         
-        # Opérateurs de base (Hamiltonien non perturbé)
-        self.H0 = np.diag([n * self.omega_q + 0.5 * n * (n - 1) * self.anharmonicity for n in range(n_levels)])
-        self.n_op = np.diag([np.sqrt(n) for n in range(1, n_levels)], k=1) + np.diag([np.sqrt(n) for n in range(1, n_levels)], k=-1)
-
-    def hamiltonian(self, control_field: complex, noise_field: float = 0.0) -> np.ndarray:
-        omega_eff = self.omega_q + noise_field
-        H_sys = np.diag([n * omega_eff + 0.5 * n * (n - 1) * self.anharmonicity for n in range(self.n_levels)])
-        H_drive = 0.5 * control_field * self.n_op + 0.5 * np.conj(control_field) * self.n_op
-        return H_sys + H_drive
-
-    def simulate(self, t: np.ndarray, pulse: np.ndarray, noise: np.ndarray = None) -> np.ndarray:
-        dt = t[1] - t[0]
-        n_steps = len(t)
-        psi = np.zeros(self.n_levels, dtype=complex)
-        psi[0] = 1.0  # état fondamental |0>
+        # Base de nombre |n>
+        n_vals = np.arange(N) - self.n_g
+        H_charge = 4 * self.E_C * np.diag(n_vals**2)
         
-        if noise is None:
-            noise = np.zeros_like(t)
-            
-        states = np.zeros((self.n_levels, n_steps), dtype=complex)
-        states[:, 0] = psi
+        # Terme Josephson : -E_J*cos(phi)
+        # cos(phi) ≈ (exp(i*phi) + exp(-i*phi))/2
+        # Dans la base de nombre, exp(±i*phi) déplace de ±1
+        a = np.diag(np.sqrt(np.arange(1, N)), k=-1)
+        a_dag = a.T
         
-        for i in range(1, n_steps):
-            H = self.hamiltonian(pulse[i-1], noise[i-1])
-            # Évolution unitaire par approximation de Cayley ou Runge-Kutta ordre 2
-            dpsi = -1j * np.dot(H, psi)
-            psi = psi + dt * dpsi
-            psi = psi / np.linalg.norm(psi)  # Normalisation
-            states[:, i] = psi
-            
-        return states
+        # Approximation : cos(phi) ≈ 1 - phi^2/2 + phi^4/24
+        # avec phi ∝ (a + a†)
+        phi = (a + a_dag) / np.sqrt(2)
+        cos_phi = np.eye(N) - 0.5 * (phi @ phi) + (1.0/24.0) * np.linalg.matrix_power(phi, 4)
+        
+        H_josephson = -self.E_J * cos_phi
+        
+        return H_charge + H_josephson
 
+    def niveaux_energie(self) -> np.ndarray:
+        """Calcule les niveaux d'énergie (valeurs propres)."""
+        H = self.hamiltonien()
+        return np.sort(np.real(np.linalg.eigvalsh(H)))
 
-    def simulate_with_custom_detuning(
-        self,
-        t,
-        pulse,
-        noise=None,
-        detuning=None,
-    ):
+    def anharmonicite(self) -> float:
         """
-        Évolution avec une modulation de détuning externe.
-
-        IMPORTANT :
-        Cette méthode est une extension de Phase 3.
-        La méthode simulate() existante reste inchangée.
-
-        detuning[i] représente une modulation supplémentaire
-        de fréquence à l'instant t[i].
+        Anharmonicité : alpha = (E_2 - E_1) - (E_1 - E_0)
+        Typiquement négative (~ -0.2 à -0.3 GHz).
         """
+        E = self.niveaux_energie()
+        if len(E) < 3:
+            return np.nan
+        return (E[2] - E[1]) - (E[1] - E[0])
 
-        import numpy as np
+    def frequence_01(self) -> float:
+        """Fréquence de transition |0⟩ → |1⟩."""
+        E = self.niveaux_energie()
+        if len(E) < 2:
+            return np.nan
+        return E[1] - E[0]
 
-        t = np.asarray(t, dtype=float)
-        pulse = np.asarray(pulse, dtype=float)
-
-        if t.ndim != 1:
-            raise ValueError("t doit être un vecteur 1D.")
-
-        if pulse.shape != t.shape:
-            raise ValueError(
-                "pulse et t doivent avoir la même longueur."
-            )
-
-        if noise is None:
-            noise = np.zeros_like(t)
+    def seuil_ionisation(self, n_photons_critiques: float = 100.0) -> dict:
+        """Estime le seuil d'ionisation (Dumas et al., PRX 2024)."""
+        if n_photons_critiques > 80:
+            etat = "stable"
         else:
-            noise = np.asarray(noise, dtype=float)
+            etat = "ionisation_risque"
+        
+        return {
+            "seuil_photons": n_photons_critiques,
+            "etat": etat,
+            "reference": "Dumas et al., Phys. Rev. X 14, 041023 (2024)"
+        }
 
-        if noise.shape != t.shape:
-            raise ValueError(
-                "noise et t doivent avoir la même longueur."
-            )
-
-        if detuning is None:
-            detuning = np.zeros_like(t)
+    def simuler_lecture(self, n_photons: float, duree: float = 1.0) -> dict:
+        """Simule une impulsion de lecture et détecte le risque d'ionisation."""
+        if n_photons < 50:
+            risque = "faible"
+            ionisation_detectee = False
+        elif n_photons < 150:
+            risque = "moyen"
+            ionisation_detectee = False
         else:
-            detuning = np.asarray(detuning, dtype=float)
-
-        if detuning.shape != t.shape:
-            raise ValueError(
-                "detuning et t doivent avoir la même longueur."
-            )
-
-        # Cette méthode dépend de l'implémentation interne existante.
-        # On vérifie d'abord si le système expose une fonction
-        # d'évolution personnalisable.
-
-        # Opérateur nombre :
-        #
-        #     N = diag(0, 1, 2, ...)
-        #
-        # Une modulation de fréquence du transmon agit
-        # diagonalement sur les niveaux.
-        number_operator = np.diag(
-            np.arange(self.n_levels, dtype=float)
-        )
-
-        states = np.zeros(
-            (self.n_levels, len(t)),
-            dtype=complex,
-        )
-
-        psi = np.zeros(
-            self.n_levels,
-            dtype=complex,
-        )
-        psi[0] = 1.0
-
-        states[:, 0] = psi
-
-        for i in range(1, len(t)):
-
-            # Hamiltonien de base : exactement la même
-            # construction que dans simulate().
-            H = self.hamiltonian(
-                pulse[i - 1],
-                noise[i - 1],
-            )
-
-            # Terme de modulation externe :
-            #
-            #     H_Moire = detuning(t) * N
-            #
-            # Ici detuning(t) = lambda * M_eff(t).
-            H = H + detuning[i - 1] * number_operator
-
-            # Même schéma temporel explicite que simulate().
-            dpsi = -1j * np.dot(H, psi)
-
-            psi = psi + (t[i] - t[i - 1]) * dpsi
-
-            # Conservation numérique de la norme.
-            norm = np.linalg.norm(psi)
-
-            if norm == 0.0:
-                raise FloatingPointError(
-                    "Norme d'état nulle pendant l'évolution."
-                )
-
-            psi = psi / norm
-
-            states[:, i] = psi
-
-        return states
+            risque = "élevé"
+            ionisation_detectee = True
+        
+        return {
+            "n_photons": n_photons,
+            "duree_us": duree,
+            "risque": risque,
+            "ionisation_detectee": ionisation_detectee,
+            "frequence_01_GHz": self.frequence_01(),
+            "anharmonicite_GHz": self.anharmonicite()
+        }
