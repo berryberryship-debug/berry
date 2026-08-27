@@ -1,0 +1,2 @@
+[console_scripts]
+nonlinear-nis = nonlinear_information_system.cli:main

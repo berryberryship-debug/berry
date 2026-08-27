@@ -1,0 +1,18 @@
+model:
+  LAMBDA: 1.0
+  V: 1.0
+  V_C: 0.30
+  MU: 1.8
+  DELTA: 0.40
+  ETA: 1.6
+  THETA: 0.35
+  GAMMA_0: 1.2
+  XI: 0.25
+  SIGMA: 15.0
+  KAPPA: 5.0
+
+simulation:
+  t0: 0.0
+  t1: 100.0
+  n_samples: 4000
+  y0: [0.05, 0.0, 0.02, 0.02]

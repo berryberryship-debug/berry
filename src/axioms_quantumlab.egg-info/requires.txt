@@ -1,2 +1,12 @@
 numpy
 scipy
+
+[dev]
+pytest>=8.0
+
+[nis]
+numpy>=1.26
+scipy>=1.11
+pandas>=2.2
+matplotlib>=3.8
+PyYAML>=6.0

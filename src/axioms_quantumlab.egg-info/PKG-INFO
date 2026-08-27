@@ -4,3 +4,11 @@ Version: 0.1.0
 Summary: Architecture autopoïétique et moteur solitonique
 Requires-Dist: numpy
 Requires-Dist: scipy
+Provides-Extra: nis
+Requires-Dist: numpy>=1.26; extra == "nis"
+Requires-Dist: scipy>=1.11; extra == "nis"
+Requires-Dist: pandas>=2.2; extra == "nis"
+Requires-Dist: matplotlib>=3.8; extra == "nis"
+Requires-Dist: PyYAML>=6.0; extra == "nis"
+Provides-Extra: dev
+Requires-Dist: pytest>=8.0; extra == "dev"
