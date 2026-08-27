@@ -64,8 +64,13 @@ def export_metadata_json(
     yT: np.ndarray,
     eig_T: np.ndarray,
     filename: str = "metadata.json",
+    *,
+    e_ext_star: float | None = None,
+    e_ext_T: float | None = None,
+    dissipation: float | None = None,
+    orientation: int | None = None,
 ) -> None:
-    """Export run metadata (config + eigenvalue summaries) to a JSON file.
+    """Export run metadata (config + eigenvalue summaries + derived quantities) to a JSON file.
 
     Parameters
     ----------
@@ -83,6 +88,14 @@ def export_metadata_json(
         Eigenvalues at the final state.
     filename:
         Name of the output file (default: ``metadata.json``).
+    e_ext_star:
+        Extractable energy at the fixed point (optional).
+    e_ext_T:
+        Extractable energy at the final state (optional).
+    dissipation:
+        Cumulative dissipation along the trajectory (optional).
+    orientation:
+        Topological orientation of the final state (optional).
     """
     meta: dict[str, Any] = {
         "config": {k: (v.tolist() if isinstance(v, np.ndarray) else v) for k, v in cfg.items()},
@@ -93,6 +106,14 @@ def export_metadata_json(
         "eig_T_real": np.real(eig_T).tolist(),
         "eig_T_imag": np.imag(eig_T).tolist(),
     }
+    if e_ext_star is not None:
+        meta["extractable_energy_x_star"] = e_ext_star
+    if e_ext_T is not None:
+        meta["extractable_energy_yT"] = e_ext_T
+    if dissipation is not None:
+        meta["cumulative_dissipation"] = dissipation
+    if orientation is not None:
+        meta["topological_orientation"] = orientation
     (Path(run_dir) / filename).write_text(
         json.dumps(meta, indent=2), encoding="utf-8"
     )

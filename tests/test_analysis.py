@@ -10,7 +10,12 @@ from nonlinear_information_system.analysis import (
     find_fixed_point,
     stability_report,
     eigenvalue_summary,
+    configurational_potential,
+    extractable_energy,
+    cumulative_dissipation,
+    topological_orientation,
 )
+from nonlinear_information_system.simulation import simulate
 
 CFG = {
     "LAMBDA": 1.0,
@@ -67,3 +72,67 @@ class TestEigenvalueSummary:
         eig = np.array([-1.0, 0.01, -0.5, -0.1])
         summary = eigenvalue_summary(eig)
         assert summary["is_stable"] is False
+
+
+CFG_SIM = {**CFG, "t0": 0.0, "t1": 10.0, "n_samples": 200, "y0": [0.05, 0.0, 0.02, 0.02]}
+
+
+class TestConfigurationalPotential:
+    def test_returns_float(self):
+        y = np.array([1.0, 0.0, 0.5, 0.5])
+        P = configurational_potential(y, CFG)
+        assert isinstance(P, float)
+
+    def test_zero_field(self):
+        y = np.array([0.0, 0.0, 0.5, 0.5])
+        P = configurational_potential(y, CFG)
+        assert P == pytest.approx(CFG["LAMBDA"] / 4.0 * CFG["V"] ** 4)
+
+    def test_at_minimum_lower_than_at_zero(self):
+        y_min = np.array([CFG["V"], 0.0, 0.0, 0.0])
+        y_zero = np.array([0.0, 0.0, 0.0, 0.0])
+        assert configurational_potential(y_min, CFG) < configurational_potential(y_zero, CFG)
+
+
+class TestExtractableEnergy:
+    def test_non_negative(self):
+        y = np.array([1.0, 0.0, 0.5, 0.5])
+        ref = np.array([0.0, 0.0, 0.0, 0.0])
+        assert extractable_energy(y, ref, CFG) >= 0.0
+
+    def test_lower_potential_yields_positive(self):
+        ref = np.array([0.0, 0.0, 0.0, 0.0])
+        y_low = np.array([CFG["V"], 0.0, 0.0, 0.0])
+        assert extractable_energy(y_low, ref, CFG) > 0.0
+
+    def test_higher_potential_yields_zero(self):
+        y_high = np.array([0.0, 0.0, 0.0, 0.0])
+        ref = np.array([CFG["V"], 0.0, 0.0, 0.0])
+        assert extractable_energy(y_high, ref, CFG) == 0.0
+
+
+class TestCumulativeDissipation:
+    def test_non_negative(self):
+        sol = simulate(CFG_SIM["y0"], CFG_SIM)
+        D = cumulative_dissipation(sol, CFG_SIM)
+        assert D >= 0.0
+
+    def test_increases_with_integration_time(self):
+        cfg_short = {**CFG_SIM, "t1": 5.0, "n_samples": 100}
+        cfg_long = {**CFG_SIM, "t1": 10.0, "n_samples": 200}
+        D_short = cumulative_dissipation(simulate(cfg_short["y0"], cfg_short), cfg_short)
+        D_long = cumulative_dissipation(simulate(cfg_long["y0"], cfg_long), cfg_long)
+        assert D_long >= D_short
+
+
+class TestTopologicalOrientation:
+    @pytest.mark.parametrize("phi,expected", [(1.0, 1), (-1.0, -1), (0.0, 0)])
+    def test_sign(self, phi, expected):
+        y = np.array([phi, 0.0, 0.5, 0.5])
+        assert topological_orientation(y) == expected
+
+    def test_settled_trajectory(self):
+        sol = simulate(CFG_SIM["y0"], CFG_SIM)
+        yT = sol.y[:, -1]
+        orient = topological_orientation(yT)
+        assert orient in {-1, 0, 1}

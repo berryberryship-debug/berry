@@ -11,7 +11,22 @@ from typing import Any
 
 import yaml
 
-_DEFAULT_CONFIG_PATH = Path(__file__).parent.parent.parent.parent / "config" / "default.yaml"
+# Candidate locations for the default config (checked in order).
+_CANDIDATES = [
+    Path(__file__).parent.parent.parent.parent / "config" / "default.yaml",  # editable install
+    Path(__file__).parent.parent.parent / "config" / "default.yaml",          # wheel install
+    Path("config") / "default.yaml",                                           # cwd fallback
+]
+
+
+def _default_config_path() -> Path:
+    for p in _CANDIDATES:
+        if p.exists():
+            return p
+    raise FileNotFoundError(
+        "Could not find config/default.yaml. "
+        "Pass an explicit --config path or run from the project root."
+    )
 
 
 def load_config(path: str | Path | None = None) -> dict[str, Any]:
@@ -29,7 +44,7 @@ def load_config(path: str | Path | None = None) -> dict[str, Any]:
         Nested configuration dictionary with ``model`` and ``simulation``
         sub-dictionaries.
     """
-    config_path = Path(path) if path is not None else _DEFAULT_CONFIG_PATH
+    config_path = Path(path) if path is not None else _default_config_path()
     with config_path.open(encoding="utf-8") as fh:
         cfg = yaml.safe_load(fh)
     return cfg
