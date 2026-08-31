@@ -7,6 +7,7 @@ src/axioms_quantumlab.egg-info/entry_points.txt
 src/axioms_quantumlab.egg-info/requires.txt
 src/axioms_quantumlab.egg-info/top_level.txt
 src/nonlinear_information_system/__init__.py
+src/nonlinear_information_system/__main__.py
 src/nonlinear_information_system/analysis.py
 src/nonlinear_information_system/cli.py
 src/nonlinear_information_system/config.py
